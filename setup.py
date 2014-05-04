@@ -25,7 +25,6 @@ setup(
     install_requires=[
         'setuptools',
         'Products.CMFPlone',
-        'venusianconfiguration',
         'plone.transformchain',
     ],
     extras_require={'test': [
