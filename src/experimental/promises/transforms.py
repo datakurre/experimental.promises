@@ -119,7 +119,7 @@ class PromisesTransform(object):
     implements(ITransform)
     adapts(Interface, IContainsPromises)
 
-    order = 8860
+    order = 7000  # before p.a.theming and p.a.blocks
 
     def __init__(self, published, request):
         self.published = published
