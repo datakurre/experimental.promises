@@ -24,6 +24,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'setuptools',
+        'futures',
         'Products.CMFPlone',
         'plone.transformchain',
     ],

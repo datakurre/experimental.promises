@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import StringIO
 import threading
+import collections
+import futures
 
 from zope.interface import Interface
 from zope.component import adapts
@@ -53,11 +55,11 @@ class zhttp_channel_wrapper(object):
         return getattr(self._channel, key)
 
 
-def worker(name, func, callback):
-    try:
-        callback(name, func())
-    except Exception as e:
-        callback(name, e)
+def safe_iterable(value):
+    if isinstance(value, collections.Iterable):
+        return value
+    else:
+        return value,  # wrap into a tuple
 
 
 class PromiseWorkerStreamIterator(StringIO.StringIO):
@@ -89,11 +91,23 @@ class PromiseWorkerStreamIterator(StringIO.StringIO):
         # Init Lock
         self._mutex = threading.Lock()
 
-        # Fire workers
-        for name, func in self._promises.items():
-            thread = threading.Thread(
-                target=worker, args=(name, func, self.record,))
-            thread.start()
+        # Resolve promises into futures
+        # TODO: make max_workers configurable via add-on configuration
+        # TODO: support ProcessPoolExecutor via add-on configuration
+        # (ProcessPoolExecutor would require extra care for checking that
+        # only pickleable promises are executed)
+        with futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures_to_promises = dict([
+                (executor.submit(*safe_iterable(value)), name)
+                for name, value in self._promises.items()
+            ])
+            for future in futures.as_completed(futures_to_promises):
+                promise = futures_to_promises[future]
+                try:
+                    value = future.result()
+                except Exception as e:
+                    value = e
+                self.record(promise, value)
 
     def record(self, name, value):
         with self._mutex:
