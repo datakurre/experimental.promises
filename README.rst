@@ -40,7 +40,7 @@ Example
                return IFutures(self.request)['my_unique_key']
            else:
                IPromises['my_unique_key'] = my_async_task
-               return u''  # this never gets returned
+               return u''  # this never gets published
 
 
 Explanation
