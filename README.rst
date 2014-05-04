@@ -67,4 +67,8 @@ internal request is dispatched.
 After this second pass, the add-on code can use
 the now available futures, not set any more promises, and
 finally, the response is published all the way to
-the browser. 
+the browser.
+
+-----
+
+For more background information: http://datakurre.pandala.org/2014/05/asynchronous-stream-iterators-and.html
