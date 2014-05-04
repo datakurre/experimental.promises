@@ -29,7 +29,7 @@ Example
 
   
    def my_async_task():
-       # a lot of async procosessing
+       # a lot of async processing
        return u'my asynchronously computed value'
 
 
