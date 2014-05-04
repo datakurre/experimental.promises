@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 import time
-import os
 
-from zope.interface import Interface
 from Products.Five.browser import BrowserView
 
 from experimental.promises.interfaces import (
     IFutures,
     IPromises
 )
-from venusianconfiguration import configure
 
 
 def sleep(value):
@@ -17,9 +14,6 @@ def sleep(value):
     return value
 
 
-@configure.browser.page.klass(
-    name='promises-async-demo', for_=Interface, permission='zope2.View',
-    template=os.path.join('templates', 'demoview.pt'))
 class PromisesAsyncDemoView(BrowserView):
 
     @property
@@ -51,9 +45,6 @@ class PromisesAsyncDemoView(BrowserView):
         return u''
 
 
-@configure.browser.page.klass(
-    name='promises-sync-demo', for_=Interface, permission='zope2.View',
-    template=os.path.join('templates', 'demoview.pt'))
 class PromisesSyncDemoView(PromisesAsyncDemoView):
 
     @property

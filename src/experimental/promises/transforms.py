@@ -11,7 +11,6 @@ from ZServer.PubCore.ZEvent import Wakeup
 from ZServer.Producers import iterator_producer
 from ZServer.HTTPResponse import ChannelPipe
 
-from venusianconfiguration import configure
 from experimental.promises.interfaces import (
     IContainsPromises,
     IPromises,
@@ -116,9 +115,7 @@ class PromiseWorkerStreamIterator(StringIO.StringIO):
         return 0  # promise worker cannot return any sane value
 
 
-
-@configure.adapter.factory(name='experimental.promises.transform')
-class PromiseTransform(object):
+class PromisesTransform(object):
     implements(ITransform)
     adapts(Interface, IContainsPromises)
 

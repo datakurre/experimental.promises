@@ -1,0 +1,22 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="experimental.promises">
+
+  <browser:page
+      name="promises-async-demo"
+      for="*"
+      class=".browser.PromisesAsyncDemoView"
+      template="templates/demoview.pt"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="promises-sync-demo"
+      for="*"
+      class=".browser.PromisesSyncDemoView"
+      template="templates/demoview.pt"
+      permission="zope2.View"
+      />
+
+</configure>

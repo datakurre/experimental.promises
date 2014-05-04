@@ -14,11 +14,8 @@ class PromisesTests(PloneSandboxLayer):
     defaultBases = (PLONE_FIXTURE,)
 
     def setUpZope(self, app, configurationContext):
-        import venusianconfiguration
-        venusianconfiguration.enable()
         import experimental.promises
-        self.loadZCML(package=experimental.promises,
-                      name='configure.py')
+        self.loadZCML(package=experimental.promises)
 
     def setUpPloneSite(self, portal):
         portal.portal_workflow.setDefaultChain('simple_publication_workflow')
