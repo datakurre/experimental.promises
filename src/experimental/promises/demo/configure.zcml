@@ -1,6 +1,7 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:monkey="http://namespaces.plone.org/monkey"
     i18n_domain="experimental.promises">
 
   <browser:page
@@ -17,6 +18,16 @@
       class=".browser.PromisesSyncDemoView"
       template="templates/demoview.pt"
       permission="zope2.View"
+      />
+
+  <include package="collective.monkeypatcher" />
+
+  <monkey:patch
+      description="This monkeypatches RSS portlet to use promises"
+      class="plone.app.portlets.portlets.rss.RSSFeed"
+      original="_retrieveFeed"
+      preserveOriginal="true"
+      replacement=".rss._retrieveFeed"
       />
 
 </configure>
