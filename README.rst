@@ -36,10 +36,10 @@ Example
    class MyView(BrowserView):
 
        def __call__(self):
-           if 'my_unique_key' in IFutures(self.request):
+           try:
                return IFutures(self.request)['my_unique_key']
-           else:
-               IPromises['my_unique_key'] = my_async_task
+           except KeyError:
+               IPromises(self.request)['my_unique_key'] = my_async_task
                return u''  # this never gets published
 
 
