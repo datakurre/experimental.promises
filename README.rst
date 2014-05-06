@@ -24,13 +24,10 @@ Example
 
    from Products.Five.browser import BrowserView
 
-   from experimental.promises import (
-       get,
-       submit
-   )
+   from experimental import promises
 
-  
-   def my_async_task():
+
+   def my_async_task(*args):
        # a lot of async processing
        return u'my asynchronously computed value'
 
@@ -39,9 +36,10 @@ Example
 
        def __call__(self):
            try:
-               return get('my_unique_key')
+               return promises.get('my_unique_key')
            except KeyError:
-               return submit('my_unique_key', my_async_task) and u''
+               promises.submit('my_unique_key', my_async_task, 'arg1, 'arg2')
+               return u''
 
 or
 
@@ -49,10 +47,10 @@ or
 
    from Products.Five.browser import BrowserView
 
-   from experimental.promises import getOrSubmit
+   from experimental import promises
 
 
-   def my_async_task():
+   def my_async_task(*args):
        # a lot of async processing
        return u'my asynchronously computed value'
 
@@ -60,7 +58,8 @@ or
    class MyView(BrowserView):
 
        def __call__(self):
-           return getOrSubmit('my_unique_key, my_async_task) or u''
+           return promises.getOrSubmit('my_unique_key', u'here be promise',
+                                       my_async_task, 'arg1', 'arg2')
 
 
 Explanation

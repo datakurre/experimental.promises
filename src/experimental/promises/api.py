@@ -10,7 +10,11 @@ _marker = object()
 
 
 def get(key, default=_marker):
-    """Get the required future, or default, or raise KeyError"""
+    """Get the required future. When the future is not available, return
+    the given default or raise KeyError. If the future is an exception,
+    it will be raised instead of returned. If the future is a KeyError,
+    it will be raised as a value of an Exception instead.
+    """
     request = getRequest()
 
     try:
@@ -30,7 +34,10 @@ def get(key, default=_marker):
 
 
 def submit(key, fn, *args, **kwargs):
-    """Submit promise for the default executor"""
+    """Submit promise (name, function, arguments.., keyword arguments...)
+    for the default (thread) executor
+
+    """
     request = getRequest()
     IPromises(request)[key] = {
         'fn': fn,
@@ -40,16 +47,21 @@ def submit(key, fn, *args, **kwargs):
     return True  # to enable submit(...) and ...
 
 
-def getOrSubmit(key, fn, *args, **kwargs):
+def getOrSubmit(key, placeholder, fn, *args, **kwargs):
+    """Get the required future. When the future is not available,
+    submit the given promise and return the given placeholder instead.
+
+    """
     try:
         return get(key)
     except KeyError:
         submit(key, fn, *args, **kwargs)
-    return None  # to enable getOrSubmit(...) or ...
+    return placeholder
 
 
 def submitMultiprocess(key, fn, *args, **kwargs):
-    """Submit promise for process pool executor
+    """Submit promise (name, function, arguments.., keyword arguments...)
+    for the process pool executor.
 
     Args are pickled, because only pickleable promises can be resolved with
     MultiProcessExecutor and unpickleable args raises an exception, which
@@ -65,9 +77,14 @@ def submitMultiprocess(key, fn, *args, **kwargs):
     return True  # to enable submit(...) and ...
 
 
-def getOrSubmitMultiprocess(key, fn, *args, **kwargs):
+def getOrSubmitMultiprocess(key, placeholder, fn, *args, **kwargs):
+    """Get the required future. When the future is not available,
+    submit the given promise and return the given placeholder instead
+    (for the process pool executor).
+
+    """
     try:
         return get(key)
     except KeyError:
         submitMultiprocess(key, fn, *args, **kwargs)
-    return None  # to enable getOrSubmitMultiprocess(...) or ...
+    return placeholder

@@ -9,12 +9,7 @@ from experimental.promises.interfaces import (
     IPromises
 )
 
-from experimental.promises import (
-    get,
-    getOrSubmit,
-    submit,
-    submitMultiprocess,
-)
+from experimental import promises
 
 
 def sleep(value):
@@ -35,7 +30,7 @@ class PromisesAsyncDemoView(BrowserView):
 
     @property
     def b(self):
-        return getOrSubmit('demo_view_b', sleep, 'B') or u''
+        return promises.getOrSubmit('demo_view_b', u'', sleep, 'B')
 
     @property
     def c(self):
@@ -47,17 +42,17 @@ class PromisesAsyncDemoView(BrowserView):
     @property
     def d(self):
         try:
-            return get('demo_view_d')
+            return promises.get('demo_view_d')
         except KeyError:
-            submit('demo_view_d', sleep, 'D')
+            promises.submit('demo_view_d', sleep, 'D')
             return u''
 
     @property
     def e(self):
         try:
-            return get('demo_view_e')
+            return promises.get('demo_view_e')
         except KeyError:
-            submitMultiprocess('demo_view_e', sleep, 'E')
+            promises.submitMultiprocess('demo_view_e', sleep, 'E')
             return u''
 
 

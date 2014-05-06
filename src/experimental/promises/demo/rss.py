@@ -3,4 +3,4 @@ from experimental.promises import getOrSubmit
 
 
 def _retrieveFeed(self):
-    return getOrSubmit(self.url, self._old__retrieveFeed) or False
+    return getOrSubmit(self.url, False, self._old__retrieveFeed)
