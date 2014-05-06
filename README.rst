@@ -43,6 +43,25 @@ Example
            except KeyError:
                return submit('my_unique_key', my_async_task) and u''
 
+or
+
+.. code:: python
+
+   from Products.Five.browser import BrowserView
+
+   from experimental.promises import getOrSubmit
+
+
+   def my_async_task():
+       # a lot of async processing
+       return u'my asynchronously computed value'
+
+
+   class MyView(BrowserView):
+
+       def __call__(self):
+           return getOrSubmit('my_unique_key, my_async_task) or u''
+
 
 Explanation
 -----------
