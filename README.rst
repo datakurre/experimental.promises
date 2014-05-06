@@ -38,7 +38,7 @@ Example
            try:
                return promises.get('my_unique_key')
            except KeyError:
-               promises.submit('my_unique_key', my_async_task, 'arg1, 'arg2')
+               promises.submit('my_unique_key', my_async_task, 'arg1', 'arg2')
                return u''
 
 or
