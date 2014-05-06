@@ -37,7 +37,7 @@ def submit(key, fn, *args, **kwargs):
         'args': args,
         'kwargs': kwargs
     }
-    return None
+    return True  # to enable submit(...) and ...
 
 
 def get_or_submit(key, fn, *args, **kwargs):
@@ -45,7 +45,7 @@ def get_or_submit(key, fn, *args, **kwargs):
         return get(key)
     except KeyError:
         submit(key, fn, *args, **kwargs)
-    return None
+    return None  # to enable getOrSubmit(...) or ...
 
 
 getOrSubmit = get_or_submit  # camelCase alias
@@ -65,7 +65,7 @@ def submit_multiprocess(key, fn, *args, **kwargs):
         'args': args,
         'kwargs': kwargs
     })
-    return None
+    return True  # to enable submit(...) and ...
 
 submitMultiprocess = submit_multiprocess  # camelCase alias
 
@@ -75,7 +75,7 @@ def get_or_submit_multiprocess(key, fn, *args, **kwargs):
         return get(key)
     except KeyError:
         submit_multiprocess(key, fn, *args, **kwargs)
-    return None
+    return None  # to enable getOrSubmitMultiprocess(...) or ...
 
 
 getOrSubmitMultiprocess = get_or_submit_multiprocess  # camelCase alias

@@ -24,8 +24,10 @@ Example
 
    from Products.Five.browser import BrowserView
 
-   from experimental.promises.interfaces import IFutures
-   from experimental.promises.interfaces import IPromises
+   from experimental.promises import (
+       get,
+       submit
+   )
 
   
    def my_async_task():
@@ -37,10 +39,9 @@ Example
 
        def __call__(self):
            try:
-               return IFutures(self.request)['my_unique_key']
+               return get('my_unique_key')
            except KeyError:
-               IPromises(self.request)['my_unique_key'] = my_async_task
-               return u''  # this never gets published
+               return submit('my_unique_key', my_async_task) and u''
 
 
 Explanation
