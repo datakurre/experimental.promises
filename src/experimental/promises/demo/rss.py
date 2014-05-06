@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
-from experimental.promises import (
-    get,
-    submit
-)
+from experimental.promises import getOrSubmit
 
 
 def _retrieveFeed(self):
-    try:
-        return get(self.url)
-    except KeyError:
-        submit(self.url, self._old__retrieveFeed)
-        return False
+    return getOrSubmit(self.url, self._old__retrieveFeed) or False

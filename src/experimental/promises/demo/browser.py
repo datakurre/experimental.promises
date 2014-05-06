@@ -11,8 +11,9 @@ from experimental.promises.interfaces import (
 
 from experimental.promises import (
     get,
+    getOrSubmit,
     submit,
-    multiprocess
+    submitMultiprocess,
 )
 
 
@@ -34,10 +35,7 @@ class PromisesAsyncDemoView(BrowserView):
 
     @property
     def b(self):
-        if 'demo_view_b' in IFutures(self.request):
-            return IFutures(self.request)['demo_view_b']
-        IPromises(self.request)['demo_view_b'] = sleep, 'B'
-        return u''
+        return getOrSubmit('demo_view_b', sleep, 'B') or u''
 
     @property
     def c(self):
@@ -59,7 +57,7 @@ class PromisesAsyncDemoView(BrowserView):
         try:
             return get('demo_view_e')
         except KeyError:
-            multiprocess('demo_view_e', sleep, 'E')
+            submitMultiprocess('demo_view_e', sleep, 'E')
             return u''
 
 

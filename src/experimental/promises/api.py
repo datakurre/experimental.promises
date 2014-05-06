@@ -37,10 +37,21 @@ def submit(key, fn, *args, **kwargs):
         'args': args,
         'kwargs': kwargs
     }
-    return True
+    return None
 
 
-def multiprocess(key, fn, *args, **kwargs):
+def get_or_submit(key, fn, *args, **kwargs):
+    try:
+        return get(key)
+    except KeyError:
+        submit(key, fn, *args, **kwargs)
+    return None
+
+
+getOrSubmit = get_or_submit  # camelCase alias
+
+
+def submit_multiprocess(key, fn, *args, **kwargs):
     """Submit promise for process pool executor
 
     Args are pickled, because only pickleable promises can be resolved with
@@ -54,4 +65,17 @@ def multiprocess(key, fn, *args, **kwargs):
         'args': args,
         'kwargs': kwargs
     })
-    return True
+    return None
+
+submitMultiprocess = submit_multiprocess  # camelCase alias
+
+
+def get_or_submit_multiprocess(key, fn, *args, **kwargs):
+    try:
+        return get(key)
+    except KeyError:
+        submit_multiprocess(key, fn, *args, **kwargs)
+    return None
+
+
+getOrSubmitMultiprocess = get_or_submit_multiprocess  # camelCase alias
