@@ -26,6 +26,7 @@ setup(
         'setuptools',
         'futures',
         'Products.CMFPlone',
+        'zope.globalrequest',
         'plone.transformchain',
     ],
     extras_require={'test': [

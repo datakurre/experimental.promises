@@ -2,7 +2,9 @@
 import StringIO
 import threading
 import collections
-import futures
+from App.config import getConfiguration
+import cPickle
+from concurrent import futures
 
 from zope.interface import Interface
 from zope.component import adapts
@@ -55,11 +57,32 @@ class zhttp_channel_wrapper(object):
         return getattr(self._channel, key)
 
 
-def safe_iterable(value):
-    if isinstance(value, collections.Iterable):
-        return value
+def safe_promise(value):
+    """Parse promise value into its fn, args and kwargs"""
+
+    if isinstance(value, dict):
+        fn = value.get('fn')
+        args = value.get('args', [])
+        kwargs = value.get('kwargs', {})
+
+    elif isinstance(value, collections.Iterable) and len(value):
+        fn = value[0]
+        args = value[1:]
+        kwargs = {}
+
     else:
-        return value,  # wrap into a tuple
+        fn = value
+        args = []
+        kwargs = {}
+
+    return fn, args, kwargs
+
+
+def safe_submit(executor, value):
+    """Parse promise value into its fn, args and kwargs and submit
+    it for the given executor"""
+    fn, args, kwargs = safe_promise(value)
+    return executor.submit(fn, *args, **kwargs)
 
 
 class PromiseWorkerStreamIterator(StringIO.StringIO):
@@ -91,23 +114,39 @@ class PromiseWorkerStreamIterator(StringIO.StringIO):
         # Init Lock
         self._mutex = threading.Lock()
 
+        # Read the product config
+        product_config = getConfiguration().product_config
+        configuration = product_config.get('experimental.promises', dict())
+        try:
+            max_workers = int(configuration.get('max_workers', 5))
+        except ValueError:
+            max_workers = 5
+
         # Resolve promises into futures
-        # TODO: make max_workers configurable via add-on configuration
-        # TODO: support ProcessPoolExecutor via add-on configuration
-        # (ProcessPoolExecutor would require extra care for checking that
-        # only pickleable promises are executed)
-        with futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures_to_promises = dict([
-                (executor.submit(*safe_iterable(value)), name)
-                for name, value in self._promises.items()
-            ])
-            for future in futures.as_completed(futures_to_promises):
-                promise = futures_to_promises[future]
-                try:
-                    value = future.result()
-                except Exception as e:
-                    value = e
-                self.record(promise, value)
+        thread_executor = futures.ThreadPoolExecutor(max_workers=max_workers)
+        process_executor = futures.ProcessPoolExecutor(max_workers=max_workers)
+
+        futures_to_promises = dict([
+            (safe_submit(process_executor, cPickle.loads(value)), name)
+            for name, value in self._promises.items()
+            if isinstance(value, str)
+        ])
+        futures_to_promises.update(dict([
+            (safe_submit(thread_executor, value), name)
+            for name, value in self._promises.items()
+            if not isinstance(value, str)
+        ]))
+
+        for future in futures.as_completed(futures_to_promises):
+            promise = futures_to_promises[future]
+            try:
+                value = future.result()
+            except Exception as e:
+                value = e
+            self.record(promise, value)
+
+        process_executor.shutdown(wait=True)
+        thread_executor.shutdown(wait=True)
 
     def record(self, name, value):
         with self._mutex:

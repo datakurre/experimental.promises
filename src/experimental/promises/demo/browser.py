@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import cPickle
 import time
 
 from Products.Five.browser import BrowserView
@@ -10,6 +11,8 @@ from experimental.promises.interfaces import (
 
 
 def sleep(value):
+    # import threading
+    # print threading.currentThread(), value
     time.sleep(1)
     return value
 
@@ -34,14 +37,14 @@ class PromisesAsyncDemoView(BrowserView):
     def c(self):
         if 'demo_view_c' in IFutures(self.request):
             return IFutures(self.request)['demo_view_c']
-        IPromises(self.request)['demo_view_c'] = lambda: sleep('C')
+        IPromises(self.request)['demo_view_c'] = sleep, 'C'
         return u''
 
     @property
     def d(self):
         if 'demo_view_d' in IFutures(self.request):
             return IFutures(self.request)['demo_view_d']
-        IPromises(self.request)['demo_view_d'] = lambda: sleep('D')
+        IPromises(self.request)['demo_view_d'] = cPickle.dumps((sleep, 'D'))
         return u''
 
 
