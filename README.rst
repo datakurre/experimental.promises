@@ -75,7 +75,7 @@ tries to look it from the futures at first and only then
 defines a promise to compute that value.
 
 If any promises are defined, the initial response is never
-published, but instead the promise functions are exeecued in
+published, but instead the promise functions are executed in
 parallel threads separate from the default Zope threads and
 their return values are collected
 (see also the documentation of ``concurrent.futures`` in Python).
