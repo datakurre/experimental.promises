@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import transaction
+
 from zope.interface import Interface
 from zope.component import adapts
 from plone.transformchain.interfaces import ITransform
@@ -29,6 +31,7 @@ class PromisesTransform(object):
 
     def transformIterable(self, result, encoding):
         if IPromises(self.request):
+            transaction.abort()  # apparently safe in IPubBeforeCommitEvent
             return PromiseWorkerStreamIterator(
                 IPromises(self.request), self.request, self.request.response)
         else:
