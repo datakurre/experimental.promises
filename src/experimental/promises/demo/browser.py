@@ -9,6 +9,12 @@ from experimental.promises.interfaces import (
     IPromises
 )
 
+from experimental.promises import (
+    get,
+    submit,
+    multiprocess
+)
+
 
 def sleep(value):
     # import threading
@@ -30,42 +36,56 @@ class PromisesAsyncDemoView(BrowserView):
     def b(self):
         if 'demo_view_b' in IFutures(self.request):
             return IFutures(self.request)['demo_view_b']
-        IPromises(self.request)['demo_view_b'] = lambda: sleep('B')
+        IPromises(self.request)['demo_view_b'] = sleep, 'B'
         return u''
 
     @property
     def c(self):
         if 'demo_view_c' in IFutures(self.request):
             return IFutures(self.request)['demo_view_c']
-        IPromises(self.request)['demo_view_c'] = sleep, 'C'
+        IPromises(self.request)['demo_view_c'] = cPickle.dumps((sleep, 'C'))
         return u''
 
     @property
     def d(self):
-        if 'demo_view_d' in IFutures(self.request):
-            return IFutures(self.request)['demo_view_d']
-        IPromises(self.request)['demo_view_d'] = cPickle.dumps((sleep, 'D'))
-        return u''
+        try:
+            return get('demo_view_d')
+        except KeyError:
+            submit('demo_view_d', sleep, 'D')
+            return u''
+
+    @property
+    def e(self):
+        try:
+            return get('demo_view_e')
+        except KeyError:
+            multiprocess('demo_view_e', sleep, 'E')
+            return u''
 
 
 class PromisesSyncDemoView(PromisesAsyncDemoView):
 
     @property
     def a(self):
-        IFutures(self.request)['demo_view_a'] = sleep('E')
+        IFutures(self.request)['demo_view_a'] = sleep('F')
         return super(PromisesSyncDemoView, self).a
 
     @property
     def b(self):
-        IFutures(self.request)['demo_view_b'] = sleep('F')
+        IFutures(self.request)['demo_view_b'] = sleep('G')
         return super(PromisesSyncDemoView, self).b
 
     @property
     def c(self):
-        IFutures(self.request)['demo_view_c'] = sleep('G')
+        IFutures(self.request)['demo_view_c'] = sleep('H')
         return super(PromisesSyncDemoView, self).c
 
     @property
     def d(self):
-        IFutures(self.request)['demo_view_d'] = sleep('H')
+        IFutures(self.request)['demo_view_d'] = sleep('I')
         return super(PromisesSyncDemoView, self).d
+
+    @property
+    def e(self):
+        IFutures(self.request)['demo_view_e'] = sleep('J')
+        return super(PromisesSyncDemoView, self).e

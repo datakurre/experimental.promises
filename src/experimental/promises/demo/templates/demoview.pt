@@ -13,6 +13,7 @@
     <p tal:content="view/b">(async content)</p>
     <p tal:content="view/c">(async content)</p>
     <p tal:content="view/d">(async content)</p>
+    <p tal:content="view/e">(async content)</p>
   </metal:content-core>
 </metal:content-core>
 
