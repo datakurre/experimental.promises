@@ -3,19 +3,18 @@ import cPickle
 import time
 
 from Products.Five.browser import BrowserView
+from experimental.futures.exceptions import FutureNotSubmittedError
 
-from experimental.promises.interfaces import (
+from experimental.futures.interfaces import (
     IFutures,
     IPromises
 )
 
-from experimental import promises
+from experimental import futures
 
 
 def sleep(value):
-    # import threading
-    # print threading.currentThread(), value
-    time.sleep(1)
+    time.sleep(2)
     return value
 
 
@@ -30,7 +29,7 @@ class PromisesAsyncDemoView(BrowserView):
 
     @property
     def b(self):
-        return promises.getOrSubmit('demo_view_b', u'', sleep, 'B')
+        return futures.resultOrSubmit('demo_view_b', u'', sleep, 'B')
 
     @property
     def c(self):
@@ -42,17 +41,17 @@ class PromisesAsyncDemoView(BrowserView):
     @property
     def d(self):
         try:
-            return promises.get('demo_view_d')
-        except KeyError:
-            promises.submit('demo_view_d', sleep, 'D')
+            return futures.result('demo_view_d')
+        except FutureNotSubmittedError:
+            futures.submit('demo_view_d', sleep, 'D')
             return u''
 
     @property
     def e(self):
         try:
-            return promises.get('demo_view_e')
-        except KeyError:
-            promises.submitMultiprocess('demo_view_e', sleep, 'E')
+            return futures.result('demo_view_e')
+        except FutureNotSubmittedError:
+            futures.submitMultiprocess('demo_view_e', sleep, 'E')
             return u''
 
 

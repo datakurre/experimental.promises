@@ -9,30 +9,30 @@ from plone.testing import z2
 from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
 
 
-class PromisesTests(PloneSandboxLayer):
+class FuturesTests(PloneSandboxLayer):
 
     defaultBases = (PLONE_FIXTURE,)
 
     def setUpZope(self, app, configurationContext):
-        import experimental.promises
-        self.loadZCML(package=experimental.promises)
+        import experimental.futures
+        self.loadZCML(package=experimental.futures)
 
     def setUpPloneSite(self, portal):
         portal.portal_workflow.setDefaultChain('simple_publication_workflow')
 
 
-PROMISES_FIXTURE = PromisesTests()
+FUTURES_FIXTURE = FuturesTests()
 
-PROMISES_INTEGRATION_TESTING = IntegrationTesting(
-    bases=(PROMISES_FIXTURE,),
-    name='PromisesTests:Integration')
+FUTURES_INTEGRATION_TESTING = IntegrationTesting(
+    bases=(FUTURES_FIXTURE,),
+    name='FuturesTests:Integration')
 
-PROMISES_FUNCTIONAL_TESTING = FunctionalTesting(
-    bases=(PROMISES_FIXTURE,),
-    name='PromisesTests:Functional')
+FUTURES_FUNCTIONAL_TESTING = FunctionalTesting(
+    bases=(FUTURES_FIXTURE,),
+    name='FuturesTests:Functional')
 
-PROMISES_ROBOT_TESTING = FunctionalTesting(
-    bases=(PROMISES_FIXTURE,
+FUTURES_ROBOT_TESTING = FunctionalTesting(
+    bases=(FUTURES_FIXTURE,
            REMOTE_LIBRARY_BUNDLE_FIXTURE,
            z2.ZSERVER),
-    name='PromisesTests:Robot')
+    name='FuturesTests:Robot')

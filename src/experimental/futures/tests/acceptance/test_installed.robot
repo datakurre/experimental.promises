@@ -1,9 +1,9 @@
-# bin/robot-server experimentalpromises.testing.PROMISES_ROBOT_TESTING
-# bin/robot src/experimental/promises/tests/acceptance/test_installed.robot
+# bin/robot-server experimental.futures.testing.PROMISES_ROBOT_TESTING
+# bin/robot src/experimental/futures/tests/acceptance/test_installed.robot
 
 *** Settings ***
 
-Resource  promises.robot
+Resource  futures.robot
 
 Test Setup  Open test browser
 Test Teardown  Close all browsers

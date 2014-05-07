@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import cPickle
 from zope.globalrequest import getRequest
-from experimental.promises.interfaces import (
+from experimental.futures.exceptions import (
+    FutureNotResolvedError,
+    FutureNotSubmittedError
+)
+from experimental.futures.interfaces import (
     IFutures,
     IPromises
 )
@@ -9,25 +13,28 @@ from experimental.promises.interfaces import (
 _marker = object()
 
 
-def get(key, default=_marker):
-    """Get the required future. When the future is not available, return
-    the given default or raise KeyError. If the future is an exception,
-    it will be raised instead of returned. If the future is a KeyError,
-    it will be raised as a value of an Exception instead.
+def result(key, default=_marker):
+    """Get the required future result. When the future is not available, return
+    the given default or raise KeyError. If the future is an exception, it will
+    be raised instead of returned. If the future is a KeyError, it will be
+    raised as a value of an Exception instead.
     """
     request = getRequest()
 
     try:
         value = IFutures(request)[key]
     except KeyError:
-        if default is _marker:
-            raise
-        value = default
+        if default is not _marker:
+            value = default
+        elif key in IPromises(request):
+            raise FutureNotResolvedError((
+                u"Future '{0:s}' has already been submitted, "
+                u"but has not been resolved yet.").format(key))
+        else:
+            raise FutureNotSubmittedError(
+                u"Future '{0:s}' has not been resolved yet.".format(key))
 
-    if isinstance(value, KeyError):
-        # KeyError is reserved to be raised when future not yet resolved
-        raise Exception(value)
-    elif isinstance(value, Exception):
+    if isinstance(value, Exception):
         raise value
 
     return value
@@ -47,14 +54,14 @@ def submit(key, fn, *args, **kwargs):
     return True  # to enable submit(...) and ...
 
 
-def getOrSubmit(key, placeholder, fn, *args, **kwargs):
+def resultOrSubmit(key, placeholder, fn, *args, **kwargs):
     """Get the required future. When the future is not available,
     submit the given promise and return the given placeholder instead.
 
     """
     try:
-        return get(key)
-    except KeyError:
+        return result(key)
+    except FutureNotSubmittedError:
         submit(key, fn, *args, **kwargs)
     return placeholder
 
@@ -63,7 +70,7 @@ def submitMultiprocess(key, fn, *args, **kwargs):
     """Submit promise (name, function, arguments.., keyword arguments...)
     for the process pool executor.
 
-    Args are pickled, because only pickleable promises can be resolved with
+    Args are pickled, because only pickleable futures can be resolved with
     MultiProcessExecutor and unpickleable args raises an exception, which
     cannot be caught.
 
@@ -77,14 +84,14 @@ def submitMultiprocess(key, fn, *args, **kwargs):
     return True  # to enable submit(...) and ...
 
 
-def getOrSubmitMultiprocess(key, placeholder, fn, *args, **kwargs):
+def resultOrSubmitMultiprocess(key, placeholder, fn, *args, **kwargs):
     """Get the required future. When the future is not available,
     submit the given promise and return the given placeholder instead
     (for the process pool executor).
 
     """
     try:
-        return get(key)
-    except KeyError:
+        return result(key)
+    except FutureNotSubmittedError:
         submitMultiprocess(key, fn, *args, **kwargs)
     return placeholder

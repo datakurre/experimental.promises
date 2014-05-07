@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='experimental.promises',
+    name='experimental.futures',
     version='0.1.0',
     description='',
     long_description=(open('README.rst').read() + '\n' +

@@ -15,7 +15,7 @@
   <adapter factory=".adapters.get_futures" />
 
   <adapter
-      name="experimental.promises.transform"
+      name="experimental.futures.transform"
       factory=".transforms.PromisesTransform"
       />
 

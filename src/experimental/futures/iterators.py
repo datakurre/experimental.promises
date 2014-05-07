@@ -10,11 +10,11 @@ from ZServer.Producers import iterator_producer
 from ZServer.PubCore.ZEvent import Wakeup
 from concurrent import futures
 from zope.interface import implements
-from experimental.promises.interfaces import IFutures
+from experimental.futures.interfaces import IFutures
 
 
 def echo(value=None):
-    """Dummy replacement for broken promises"""
+    """Dummy replacement for broken futures"""
     return value
 
 
@@ -89,6 +89,42 @@ class zhttp_channel_wrapper(object):
         return getattr(self._channel, key)
 
 
+def worker(promises, callback):
+    # Read the product config
+    product_config = getConfiguration().product_config
+    configuration = product_config.get('experimental.promises', dict())
+    try:
+        max_workers = int(configuration.get('max_workers', 5))
+    except ValueError:
+        max_workers = 5
+
+    # Resolve promises into futures
+    thread_executor = futures.ThreadPoolExecutor(max_workers=max_workers)
+    process_executor = futures.ProcessPoolExecutor(max_workers=max_workers)
+
+    futures_to_promises = dict([
+        (safe_submit(process_executor, safe_loads(value)), name)
+        for name, value in promises.items()
+        if isinstance(value, str)
+    ])
+    futures_to_promises.update(dict([
+        (safe_submit(thread_executor, value), name)
+        for name, value in promises.items()
+        if not isinstance(value, str)
+    ]))
+
+    for future in futures.as_completed(futures_to_promises):
+        promise = futures_to_promises[future]
+        try:
+            value = future.result()
+        except Exception as e:
+            value = e
+        callback(promise, value)
+
+    process_executor.shutdown(wait=True)
+    thread_executor.shutdown(wait=True)
+
+
 class PromiseWorkerStreamIterator(StringIO.StringIO):
 
     implements(IStreamIterator)
@@ -111,46 +147,17 @@ class PromiseWorkerStreamIterator(StringIO.StringIO):
         # Enable stream iterator support
         response.setHeader('content-length', '0')  # required by ZPublisher
 
-        # Init promises and futures
+        # Init futures and futures
         self._promises = promises
         self._futures = IFutures(request)
 
         # Init Lock
         self._mutex = threading.Lock()
 
-        # Read the product config
-        product_config = getConfiguration().product_config
-        configuration = product_config.get('experimental.promises', dict())
-        try:
-            max_workers = int(configuration.get('max_workers', 5))
-        except ValueError:
-            max_workers = 5
-
-        # Resolve promises into futures
-        thread_executor = futures.ThreadPoolExecutor(max_workers=max_workers)
-        process_executor = futures.ProcessPoolExecutor(max_workers=max_workers)
-
-        futures_to_promises = dict([
-            (safe_submit(process_executor, safe_loads(value)), name)
-            for name, value in self._promises.items()
-            if isinstance(value, str)
-        ])
-        futures_to_promises.update(dict([
-            (safe_submit(thread_executor, value), name)
-            for name, value in self._promises.items()
-            if not isinstance(value, str)
-        ]))
-
-        for future in futures.as_completed(futures_to_promises):
-            promise = futures_to_promises[future]
-            try:
-                value = future.result()
-            except Exception as e:
-                value = e
-            self.record(promise, value)
-
-        process_executor.shutdown(wait=True)
-        thread_executor.shutdown(wait=True)
+        # Fire the worker
+        thread = threading.Thread(target=worker,
+                                  args=(self._promises, self.record))
+        thread.start()
 
     def record(self, name, value):
         with self._mutex:

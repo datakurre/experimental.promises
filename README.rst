@@ -1,5 +1,9 @@
-experimental.promises
-=====================
+experimental.futures
+====================
+
+(This package was renamed from *experimental.promises* to
+*experimental.futures*, because the API has been forming to
+follow usage of *concurrent.futures*.)
 
 This is an experimental package for providing yet another
 way to do asynchronous (non-blocking) processing on Plone.
@@ -24,22 +28,22 @@ Example
 
    from Products.Five.browser import BrowserView
 
-   from experimental import promises
+   from experimental import futures
 
 
    def my_async_task(*args):
-       # a lot of async processing
+       # a lot of time consuming async processing
        return u'my asynchronously computed value'
 
 
    class MyView(BrowserView):
 
-       def __call__(self):
+       def __call__(self, *args):
            try:
-               return promises.get('my_unique_key')
-           except KeyError:
-               promises.submit('my_unique_key', my_async_task, 'arg1', 'arg2')
-               return u''
+               return futures.result('my_unique_key')
+           except futures.FutureNotSubmittedError:
+               futures.submit('my_unique_key', my_async_task, *args)
+               return u'just a placeholder value'
 
 or
 
@@ -47,19 +51,19 @@ or
 
    from Products.Five.browser import BrowserView
 
-   from experimental import promises
+   from experimental import futures
 
 
    def my_async_task(*args):
-       # a lot of async processing
+       # a lot of time consuming async processing
        return u'my asynchronously computed value'
 
 
    class MyView(BrowserView):
 
-       def __call__(self):
-           return promises.getOrSubmit('my_unique_key', u'here be promise',
-                                       my_async_task, 'arg1', 'arg2')
+       def __call__(self, *args):
+           return futures.resultOrSubmit(
+               'my_unique_key', u'placeholder value', my_async_task, *args)
 
 
 Explanation
@@ -70,21 +74,23 @@ request into two separate passes:
 
 Whenever some add-on code
 requires a value to be computed asynchronously, it
-tries to look it from the futures at first and only then
-defines a promise to compute that value.
+tries to request for a named future result at first and only then
+submits a promise function to compute result for that future.
 
-If any promises are defined, the initial response is never
-published, but instead the promise functions are executed in
-parallel threads separate from the default Zope threads and
+If any futures are submitted, the initial response is never
+published, but instead the current transaction is aborted
+and the submitted promise functions are executed in
+parallel threads separate from the default Zope threads
+(or even in parallel processes) and
 their return values are collected
 (see also the documentation of ``concurrent.futures`` in Python).
 
-When all promises have been resolved, the original request
+When all promise functions have been resolved, the original request
 is cloned, resolved values are set as futures and a new
 internal request is dispatched.
 
 After this second pass, the add-on code can use
-the now available futures, not set any more promises, and
+the now available futures, not submit more futures, and
 finally, the response is published all the way to
 the browser.
 

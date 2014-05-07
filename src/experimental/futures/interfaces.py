@@ -8,8 +8,8 @@ class IPromises(IMapping):
 
 
 class IContainsPromises(Interface):
-    """Marker interfaces for requests with promises with unresolved futures"""
+    """Marker interfaces for requests with futures with unresolved futures"""
 
 
 class IFutures(IMapping):
-    """Dictionary like container for futures resolved by promises"""
+    """Dictionary like container for futures resolved by futures"""

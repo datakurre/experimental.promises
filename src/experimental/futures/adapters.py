@@ -9,7 +9,7 @@ from zope.interface import (
     alsoProvides
 )
 
-from experimental.promises.interfaces import (
+from experimental.futures.interfaces import (
     IPromises,
     IFutures,
     IContainsPromises
@@ -17,7 +17,7 @@ from experimental.promises.interfaces import (
 
 
 PROMISES_KEY = 'experimental.promises'
-FUTURES_KEY = 'experimental.promises.futures'
+FUTURES_KEY = 'experimental.futures.futures'
 
 
 @implementer(IPromises)

@@ -6,11 +6,11 @@ from zope.component import adapts
 from plone.transformchain.interfaces import ITransform
 from zope.interface import implements
 
-from experimental.promises.interfaces import (
+from experimental.futures.interfaces import (
     IContainsPromises,
     IPromises
 )
-from experimental.promises.iterators import PromiseWorkerStreamIterator
+from experimental.futures.iterators import PromiseWorkerStreamIterator
 
 
 class PromisesTransform(object):
