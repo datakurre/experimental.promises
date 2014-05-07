@@ -1,7 +1,5 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
-      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
       lang="en"
       metal:use-macro="context/main_template/macros/master"
       i18n:domain="plone">
@@ -9,11 +7,7 @@
 
 <metal:content-core fill-slot="content-core">
   <metal:content-core define-macro="content-core">
-    <p tal:content="view/a">(async content)</p>
-    <p tal:content="view/b">(async content)</p>
-    <p tal:content="view/c">(async content)</p>
-    <p tal:content="view/d">(async content)</p>
-    <p tal:content="view/e">(async content)</p>
+    <p id="test-content" tal:content="view/content">content</p>
   </metal:content-core>
 </metal:content-core>
 

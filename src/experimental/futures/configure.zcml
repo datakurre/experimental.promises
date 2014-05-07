@@ -9,16 +9,10 @@
     <implements interface="zope.annotation.IAttributeAnnotatable" />
   </class>
 
-  <i18n:registerTranslations directory="locales" />
-
   <adapter factory=".adapters.get_promises" />
   <adapter factory=".adapters.get_futures" />
 
-  <adapter
-      name="experimental.futures.transform"
-      factory=".transforms.PromisesTransform"
-      />
-
-  <include package=".demo" />
+  <adapter name="experimental.futures.transform"
+           factory=".transforms.PromisesTransform" />
 
 </configure>

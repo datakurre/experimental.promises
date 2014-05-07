@@ -2,6 +2,7 @@
 import StringIO
 import cPickle
 import collections
+import logging
 import threading
 from App.config import getConfiguration
 from ZPublisher.Iterators import IStreamIterator
@@ -11,6 +12,9 @@ from ZServer.PubCore.ZEvent import Wakeup
 from concurrent import futures
 from zope.interface import implements
 from experimental.futures.interfaces import IFutures
+
+
+logger = logging.getLogger('experimental.futures')
 
 
 def echo(value=None):
@@ -91,8 +95,8 @@ class zhttp_channel_wrapper(object):
 
 def worker(promises, callback):
     # Read the product config
-    product_config = getConfiguration().product_config
-    configuration = product_config.get('experimental.promises', dict())
+    product_config = getattr(getConfiguration(), 'product_config', {}) or {}
+    configuration = product_config.get('experimental.promises') or {}
     try:
         max_workers = int(configuration.get('max_workers', 5))
     except ValueError:
@@ -107,11 +111,15 @@ def worker(promises, callback):
         for name, value in promises.items()
         if isinstance(value, str)
     ])
+    logger.debug(
+        'multiprocess: {0:s}'.format(', '.join(futures_to_promises.values())))
     futures_to_promises.update(dict([
         (safe_submit(thread_executor, value), name)
         for name, value in promises.items()
         if not isinstance(value, str)
     ]))
+    logger.debug(
+        'all: {0:s}'.format(', '.join(futures_to_promises.values())))
 
     for future in futures.as_completed(futures_to_promises):
         promise = futures_to_promises[future]

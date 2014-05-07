@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+import logging
+from plone.app.robotframework import RemoteLibraryLayer
+from plone.app.robotframework.remote import RemoteLibrary
 from plone.app.testing import (
     PloneSandboxLayer,
     PLONE_FIXTURE,
@@ -6,7 +9,26 @@ from plone.app.testing import (
     FunctionalTesting,
 )
 from plone.testing import z2
-from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
+from zope.testing.loggingsupport import InstalledHandler
+
+
+class Futures(RemoteLibrary):
+
+    def start_futures_logging(self):
+        self._v_record = InstalledHandler('experimental.futures',
+                                          level=logging.DEBUG)
+
+    def get_futures_log(self):
+        return unicode(self._v_record)
+
+    def stop_futures_logging(self):
+        self._v_record.uninstall()
+
+REMOTE_LIBRARY_BUNDLE_FIXTURE = RemoteLibraryLayer(
+    bases=(PLONE_FIXTURE,),
+    libraries=(Futures,),
+    name="RemoteLibraryBundle:RobotRemote"
+)
 
 
 class FuturesTests(PloneSandboxLayer):
@@ -17,8 +39,15 @@ class FuturesTests(PloneSandboxLayer):
         import experimental.futures
         self.loadZCML(package=experimental.futures)
 
+        import experimental.futures.tests
+        self.loadZCML(package=experimental.futures.tests,
+                      name='test_acceptance.zcml')
+
     def setUpPloneSite(self, portal):
         portal.portal_workflow.setDefaultChain('simple_publication_workflow')
+
+    def testSetUp(self):
+        handler = InstalledHandler('experimental.futures')
 
 
 FUTURES_FIXTURE = FuturesTests()
