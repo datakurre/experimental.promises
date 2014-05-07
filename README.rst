@@ -1,6 +1,9 @@
 experimental.futures
 ====================
 
+.. image:: https://secure.travis-ci.org/datakurre/experimental.promises.png
+   :target: http://travis-ci.org/datakurre/experimental.promises
+
 (This package was renamed from *experimental.promises* to
 *experimental.futures*, because the API has been forming to
 follow usage of *concurrent.futures*.)
